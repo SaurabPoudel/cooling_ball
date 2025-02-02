@@ -2,6 +2,12 @@ import pygame
 import numpy as np
 import argparse
 
+zoom = 1.0
+pan_x = 0.0
+pan_y = 0.0
+
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Fluid Simulation with customizable parameters')
     
@@ -26,6 +32,7 @@ def parse_arguments():
 
 class FluidSimulation:
     def __init__(self, width, height, args):
+        
         self.scale = args.scale
         self.N = width // self.scale
         # controls smoothness of the fluid
@@ -214,14 +221,14 @@ class FluidSimulation:
         # Draw density field with temperature influence
         for i in range(self.N):
             for j in range(self.N):
-                x = i * self.scale
-                y = j * self.scale
+                x = ( i * self.scale - pan_x ) * zoom
+                y = ( j * self.scale - pan_y )* zoom
                 d = self.density[i, j]
                 t = self.temperature[i, j]
                 green = int(min(d * 255, 255))
                 red = int(min(t * 2, 255))
                 color = (red, green, 0)
-                pygame.draw.rect(screen, color, (x, y, self.scale, self.scale))
+                pygame.draw.rect(screen, color, (x, y, self.scale, self.scale * zoom))
         
         # Draw velocity field if enabled
         if self.show_arrows:
@@ -238,7 +245,7 @@ def print_controls():
     print("-------------------")
     print("Space: Reset simulation")
     print("ESC: Exit")
-    print("A: Toggle velocity arrows")
+    print("R: Toggle velocity arrows")
     print("Up/Down: Adjust vorticity")
     print("Left/Right: Adjust buoyancy")
     print("/N: Adjust cooling rate")
@@ -247,6 +254,7 @@ def print_controls():
 
 def main():
     args = parse_arguments()
+    global pan_y, pan_x, zoom
     
     pygame.init()
     screen = pygame.display.set_mode((args.width, args.height))
@@ -280,7 +288,7 @@ def main():
                     running = False
                 elif event.key == pygame.K_SPACE:
                     reset_simulation()
-                elif event.key == pygame.K_a:
+                elif event.key == pygame.K_r:
                     fluid.show_arrows = not fluid.show_arrows
                 elif event.key == pygame.K_UP:
                     fluid.vorticity += 0.05
@@ -298,6 +306,20 @@ def main():
                     fluid.velocity_damping = min(0.999, fluid.velocity_damping + 0.001)
                 elif event.key == pygame.K_c:
                     fluid.velocity_damping = max(0.9, fluid.velocity_damping - 0.001)
+                elif event.key == pygame.K_a:
+                    pan_x -= 20 / zoom  # Pan left
+                elif event.key == pygame.K_d:
+                    pan_x += 20 / zoom  # Pan right
+                elif event.key == pygame.K_w:
+                    pan_y -= 20 / zoom  # Pan up
+                elif event.key == pygame.K_s:
+                    pan_y += 20 / zoom  # Pan down
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 4:  # Scroll up to zoom in
+                    zoom *= 1.1
+                if event.button == 5:  # Scroll down to zoom out
+                    zoom /= 1.1 
 
         # Update window title with current parameters
         title = (f"Fluid Simulation - Vorticity: {fluid.vorticity:.2f}, "

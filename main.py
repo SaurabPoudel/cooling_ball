@@ -14,7 +14,7 @@ def parse_arguments():
     parser.add_argument('--viscosity', type=float, default=0.0000001, help='Fluid viscosity (default: 0.0000001)')
     parser.add_argument('--diffusion', type=float, default=0.0000001, help='Diffusion rate (default: 0.0000001)')
     parser.add_argument('--vorticity', type=float, default=0.1, help='Vorticity strength (default: 0.1)')
-    parser.add_argument('--buoyancy', type=float, default=0.1, help='Buoyancy strength (default: 0.1)')
+    parser.add_argument('--buoyancy', type=float, default=0.1, help='uoyancy strength (default: 0.1)')
     parser.add_argument('--cooling-rate', type=float, default=0.995, help='Cooling rate (default: 0.995)')
     parser.add_argument('--velocity-damping', type=float, default=0.99, help='Velocity damping (default: 0.99)')
     
@@ -28,12 +28,13 @@ class FluidSimulation:
     def __init__(self, width, height, args):
         self.scale = args.scale
         self.N = width // self.scale
-        self.iter = 16
+        # controls smoothness of the fluid
+        self.iter = 32
         self.show_arrows = args.show_arrows
         self.arrow_spacing = args.arrow_spacing
         
         # Physical parameters from CLI
-        self.dt = 0.1
+        self.dt = 0.01
         self.diff = args.diffusion
         self.visc = args.viscosity
         self.vorticity = args.vorticity
@@ -240,7 +241,7 @@ def print_controls():
     print("A: Toggle velocity arrows")
     print("Up/Down: Adjust vorticity")
     print("Left/Right: Adjust buoyancy")
-    print("B/N: Adjust cooling rate")
+    print("/N: Adjust cooling rate")
     print("V/C: Adjust velocity damping")
     print("\nCurrent parameters can be viewed in the window title")
 
@@ -300,7 +301,7 @@ def main():
 
         # Update window title with current parameters
         title = (f"Fluid Simulation - Vorticity: {fluid.vorticity:.2f}, "
-                f"Buoyancy: {fluid.buoyancy:.2f}, "
+                f"uoyancy: {fluid.buoyancy:.2f}, "
                 f"Cooling: {fluid.cooling_rate:.3f}, "
                 f"Damping: {fluid.velocity_damping:.3f}")
         pygame.display.set_caption(title)
